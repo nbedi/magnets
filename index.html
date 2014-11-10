@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="gemStore">
+<html ng-app="watch">
     <head >
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,7 +16,7 @@
         
         <!-- CSS -->
         <link href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.4.7/css/foundation.min.css" rel="stylesheet" type="text/css" />
-        <!-- <link href="css/main.css" rel="stylesheet" type="text/css" /> -->
+        <link href="main.css" rel="stylesheet" type="text/css" />
               
         <!-- JavaScript -->
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
@@ -24,21 +24,26 @@
         <script src="app.js"></script>
 
     </head>
-  <body class="container" ng-controller="StoreController as store">
+  <body class="container" ng-controller="WatchController as watch">
   	<h1>Watching the Watchmen</h1>
   	<h4>List of killings by law enforcement officers in the United States. Data from Wikipedia.</h4>
   	<p>From Wikipedia:</br>
-  		Within the limits set by the U.S. Supreme Court in Tennessee v. Garner, authority to use deadly force in the line of duty is granted by state law to state and local law enforcement agencies. Individual agencies set policies and procedures regarding when and how to use deadly force. When deadly force is used within the prescribed manner, the killing is deemed a justifiable homicide. Some law enforcement agencies routinely investigate all uses of deadly force while others investigate only cases involving extenuating circumstances. Other causes of death to suspects include accidents and police brutality. When the circumstances surrounding a death are questionable, a state and/or federal agency may investigate.
-
-Through the Violent Crime Control and Law Enforcement Act of 1994, specifically Section 210402, the US Congress mandated the Attorney General to collect data on the use of excessive force by police and to publish an annual report from the data. Two national systems collect data which include homicides committed by law enforcement officers in the line of duty. The National Center for Health Statistics maintains the National Vital Statistics System (NVSS) which aggregates data from locally filed death certificates. State laws require that death certificates be filed with local registrars, but the certificates do not systematically document whether a killing was legally justified nor whether a law enforcement officer was involved. The FBI maintains the Uniform Crime Reporting Program (UCR) which relies on the voluntary participation of state and local law enforcement agencies in submitting reports about crimes. A study of the years 1976 to 1998 found that both national systems underreport justifiable homicides by police officers, but for different reasons. Records in the NVSS did not consistently include documentation of police officer involvement. The UCR database did not receive reports of all applicable incidents. The authors concluded that "reliable estimates of the number of justifiable homicides committed by police officers in the United States do not exist." A study of killings by police from 1999 to 2002 in the Central Florida region found that the national databases included (in Florida) only one-fourth of the number of persons killed by police as reported in the local news media."Nationally, the percentage of unreported killings by police is probably lower than among agencies in Central Florida..."</p>
-    <div class="product row" ng-repeat="killing in store.killings | orderBy:'date'">
-      <h3>
-        Date: {{killing.date}}</br>
-        Name (age): {{killing.name}}</br>
-        State (city): {{killing.state}}</br>
-        Description: {{killing.desc}}</br>
-      </h3>
-    </div>
+  		Listed below are lists of people killed by nonmilitary law enforcement officers, whether in the line of duty or not, and regardless of reason or method. Inclusion in the lists implies neither wrongdoing nor justification on the part of the person killed or the officer involved. The listing merely documents the occurrence of a death.</p>
+      
+      <table>
+      	  <tr>
+      	  	<th width="100">Date</th>
+      	  	<th width="150">Name (age)</th>
+      	  	<th width="150">State (city)</th>
+      	  	<th>Description</th>
+      	  </tr>
+		  <tr ng-repeat="killing in watch.killings | orderBy:'date'">
+		    <td>{{ killing.date }}</td>
+		    <td>{{ killing.name }}</td>
+		    <td>{{ killing.state }}</td>
+		    <td>{{ killing.desc }}</td>
+		  </tr>
+	  </table>
   </body>
 
 </html>

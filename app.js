@@ -1,7 +1,7 @@
 (function() {
-  var app = angular.module('gemStore', []);
+  var app = angular.module('watch', []);
 
-  app.controller('StoreController', function($http){
+  app.controller('WatchController', function($http){
   	var table = this;
     this.killings = [];
 
@@ -9,11 +9,5 @@
   		table.killings = data;
   	});
   });
-
-  var gems = [
-    { name: 'Azurite', price: 110.50 },
-    { name: 'Bloodstone', price: 22.90 },
-    { name: 'Zircon', price: 1100 },
-  ];
 
 })();
