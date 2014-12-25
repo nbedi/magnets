@@ -3,9 +3,9 @@ import json
 from bs4 import BeautifulSoup
 
 pages = [
-	"http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States,_2011",
+	"http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States,_2009",
 	"http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States,_2010",
-	"http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States,_2009"	
+	"http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States,_2011"	
 ]
 
 months = [
@@ -24,10 +24,13 @@ months = [
 ]
 
 years = [
-	"2014",
 	"2013",
 	"2012"
 ]
+
+for year in years:
+	for month in months:
+		pages.append("http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States,_"+month+"_"+year)
 
 data = []
 
