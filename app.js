@@ -101,15 +101,13 @@
 
   	function link(scope, el, attr){
   		el = el[0];
-  		var width = window.innerWidth-200;
-  		var height = 600;
+  		var width = window.innerWidth+100;
+  		var height = 700;
   		var radius = 10;
 
   		var fill = d3.scale.category10();
 
-		var nodes = d3.range(100).map(function(i) {
-		  return {index: 0};
-		});
+		var nodes = [];
 
 		var force = d3.layout.force()
 		    .nodes(nodes)
@@ -117,26 +115,56 @@
 		    .on("tick", tick)
 		    .start();
 
+		force.charge(function(node) {
+				return -30;
+		    });
+
   		var svg = d3.select(el).append('svg')
           .attr({width: width, height: height})
           .style('border', '1px solid lightgrey');
 
 
-        var node = svg.selectAll(".node")
-			    .data(nodes)
-			  .enter().append("circle")
-			    .attr("class", "node")
-			    .attr("cx", function(d) { return d.x; })
-			    .attr("cy", function(d) { return d.y; })
-			    .attr("r", 8)
-			    .style("fill", function(d, i) { return fill(3); })
-			    .style("stroke", function(d, i) { return d3.rgb(fill(i & 3)).darker(2); })
-			    .call(force.drag)
+        var node = svg.selectAll(".node");
 
 		function tick(e) {
-		  // Push different nodes in different directions for clustering.
-		  node.attr("cx", function(d) { return d.x; })
-		      .attr("cy", function(d) { return d.y; });
+			// Push different nodes in different directions for clustering.
+			// var magnets = svg.selectAll(".magnet");
+			// if (magnets[0].length > 0) {
+			// 	var kx = d3.select(magnets[0][0]).attr("cx");
+			// 	var ky = d3.select(magnets[0][0]).attr("cy");
+			// 	var k = 10*e.alpha;
+			// 		nodes.forEach(function(o, i) {
+			// 		o.y +=k;
+			// 		o.x += k;
+			// 		});
+			// }
+			node.attr("cx", function(d) { return d.x; })
+      			.attr("cy", function(d) { return d.y; });
+		}
+
+		function startData() {
+			node = node.data(force.nodes(), function(d) { return d.id;});
+			node.enter().append("circle")
+			  				.attr("r", 8)
+			  				.attr("class", 'dataPoint')
+			  				.attr("magnet",0);
+			node.exit().remove();
+
+			force.start();
+		}
+
+		function startMagnet() {
+			node = node.data(force.nodes(), function(d) { return d.id;});
+			node.enter().append("circle")
+			  				.attr("r", 10)
+			  				.attr("class", 'magnet')
+			  				.attr("cx",(Math.random() * (width-50))+25)
+			  				.attr("cy",(Math.random() * (height-75))+25)
+			  				.attr("magnet",1)
+			  				.call(force.drag);
+			node.exit().remove();
+
+			force.start();
 		}
 
         scope.showCreate = false;
@@ -181,40 +209,22 @@
 	    }
 		scope.submit = function(){
 	    	scope.showCreate = false;
-	    	var newX = (Math.random() * (window.innerWidth-250))+25;
-	    	var newY = (Math.random() * 525)+25;
-	    	svg.append('circle').attr("cx", newX)
-  									.attr("cy", newY)
-  									.attr("r", radius)
-  									.attr('class', 'magnet')
-  									.call(drag)
-  									.style("fill", "orange");
-  			
-  			var dataPoints = svg.selectAll(".dataPoint");
-			var k = 10;
-			nodes.forEach(function(o, i) {
-			    i.y =newY;
-			    i.x =newX;
-			  });
-
-			dataPoints.transition()
-				  .attr("cx", newX)
-				  .attr("cy", newY)
-				  .duration(800);
-  									
+	    	var newX = (Math.random() * (width-50))+25;
+	    	var newY = (Math.random() * (height-75))+25;
+	    	var a = {};
+	  		nodes.push({});
+		  	
+			startMagnet();
+			tick();							
 	    }
 
   		scope.$watch('data', function(data){
 	  		if(data){	
-	  			for (i=0;i<data.length;i++)
-	  			{
-	  				svg.append('circle').attr("cx", (Math.random() * (window.innerWidth-250))+25)
-	  									.attr("cy", (Math.random() * 525)+25)
-	  									.attr("r", 10)
-	  									.attr("class", 'dataPoint')
-	  									.style("fill", "purple")
-	  									.data(data[i]);
+	  			for (i=0;i<data.length;i++){
+	  				var a = {id:i};
+	  				nodes.push(a);
 	  			}
+	  			startData();
 	  		}
   		})	
   	}

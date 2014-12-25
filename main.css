@@ -1,8 +1,18 @@
+.dataPoint {
+  fill: purple;
+}
+
+.magnet {
+  fill: orange;
+}
+
 body{
 	margin-left: 5%;
 	margin-right: 5%;
 	margin-top: 2%;
 	margin-bottom: 2%;
+	zoom: 75%;
+	zoom: .75;
 }
 
 h1{
