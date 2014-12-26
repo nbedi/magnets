@@ -1,2 +1,2 @@
 ####Data magnets
-#####Visually sort data with user generated 'magnets'
+Visually sort data with user generated 'magnets'
