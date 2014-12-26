@@ -6,13 +6,15 @@
   fill: orange;
 }
 
+.dataDesc {
+	zoom: .75;
+	zoom: 75%;
+}
 body{
 	margin-left: 5%;
 	margin-right: 5%;
 	margin-top: 2%;
 	margin-bottom: 2%;
-	zoom: 75%;
-	zoom: .75;
 }
 
 h1{
@@ -59,6 +61,7 @@ select{
 footer{
 	margin: 40px;
 	text-align: center;
+	font-size: 14px;
 }
 
 

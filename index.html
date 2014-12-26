@@ -1,39 +1,37 @@
 <!DOCTYPE html>
 <html ng-app="magnet" >
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Data magnets</title>
+      <title>Data magnets</title>
 
-    <!-- CSS -->
-    <link href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.4.7/css/foundation.min.css" rel="stylesheet" type="text/css" />
-    <link href="main.css" rel="stylesheet" type="text/css" />
-          
-    <!-- JavaScript -->
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.2/angular.min.js"></script>
-    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-    <script src="app.js"></script>
+      <!-- CSS -->
+      <link href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.4.7/css/foundation.min.css" rel="stylesheet" type="text/css" />
+      <link href="main.css" rel="stylesheet" type="text/css" />
+            
+      <!-- JavaScript -->
+      <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+      <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.2/angular.min.js"></script>
+      <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+      <script src="app.js"></script>
 
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+      <link rel="icon" href="favicon.ico" type="image/x-icon">
   </head>
 
   <body class="container" ng-controller="MagnetController as magnet">
-    <h1>Data magnets</h1>
-    <h3>Visually sort data with user generated 'magnets'</h3>
-    </br>
-    <ul class="inline-list">
-  	  	<li><h4>Dataset:</h4></li>
-  	  	<li><select ng-change="onDatasetChange(myDataset)" ng-model="myDataset" ng-options="dataset.name for dataset in datasets"></select></li>
-  	</ul>
-    <h5>Data from {{myDataset.from}}:</h5>
-    <h5>{{myDataset.desc}}</h5>
-   	<h5><a href={{myDataset.link}}>{{myDataset.link}}</a></h5>
-   	</br>
-  	<div class="magneticField">
-  	 	<magnet data="magnet.killings"></magnet>
-  	</div>
+      <div class="dataDesc">
+          <h1>Data magnets</h1>
+          <h3>Visually sort data with user generated 'magnets'</h3>
+          <h4>Example dataset: {{myDataset.name}}</h4>
+          <h5>Data from {{myDataset.from}}:</h5>
+          <h5>{{myDataset.desc}}</h5>
+         	<h5><a href={{myDataset.link}}>{{myDataset.link}}</a></h5>
+      </div>
+     	</br>
+    	<div class="magneticField">
+    	 	<magnet data="magnet.data"></magnet>
+    	</div>
   </body>
 
   <footer><a href="http://neilbedi.com">Visualization by Neil Bedi</a></footer>
