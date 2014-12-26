@@ -1,13 +1,14 @@
 (function() {
-  var app = angular.module('watch', []);
+  var app = angular.module('magnet', []);
 
   var datasets = [
 	        {name:'List of killings by law enforcement officers in the United States', data:'test.json', from:'Wikipedia',
-	        desc:'"Listed below are lists of people killed by nonmilitary law enforcement officers, whether in the line of duty or not, and regardless of reason or method. Inclusion in the lists implies neither wrongdoing nor justification on the part of the person killed or the officer involved. The listing merely documents the occurrence of a death. The lists below are incomplete, as the annual average number of justifiable homicides alone is estimated to be near 400. Although Congress instructed the Attorney General in 1994 to compile and publish annual statistics on police use of excessive force, this was never carried out, and the FBI does not collect this data either."'},
+	        desc:'"Listed below are lists of people killed by nonmilitary law enforcement officers, whether in the line of duty or not, and regardless of reason or method. Inclusion in the lists implies neither wrongdoing nor justification on the part of the person killed or the officer involved. The listing merely documents the occurrence of a death. The lists below are incomplete, as the annual average number of justifiable homicides alone is estimated to be near 400. Although Congress instructed the Attorney General in 1994 to compile and publish annual statistics on police use of excessive force, this was never carried out, and the FBI does not collect this data either."',
+	    	link:'http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States'},
 	        {name:'Blank', data:'x.json'}
 	      ];
 
-  app.controller('WatchController', function($http, $scope){
+  app.controller('MagnetController', function($http, $scope){
    	var table = this;
    	$scope.datasets=datasets;
    	$scope.myDataset=datasets[0];
@@ -24,76 +25,6 @@
   		table.killings = data;
 	  	});
   	});
-  
-  app.directive('test', function(){
-  	var width = window.innerWidth-200;
-  	var height = 600;
-
-	var fill = d3.scale.category10();
-
-	var nodes = d3.range(100).map(function(i) {
-	  return {index: i};
-	});
-
-	var force = d3.layout.force()
-	    .nodes(nodes)
-	    .size([width, height])
-	    .on("tick", tick)
-	    .start();
-
-	var svg = d3.select("body").append("svg")
-	    .attr("width", width)
-	    .attr("height", height)
-	    .style('border', '1px solid lightgrey');
-
-	var node = svg.selectAll(".node")
-	    .data(nodes)
-	  .enter().append("circle")
-	    .attr("class", "node")
-	    .attr("cx", function(d) { return d.x; })
-	    .attr("cy", function(d) { return d.y; })
-	    .attr("r", 8)
-	    .style("fill", function(d, i) { return fill(i & 3); })
-	    .style("stroke", function(d, i) { return d3.rgb(fill(i & 3)).darker(2); })
-	    .call(force.drag)
-	    .on("mousedown", function() { d3.event.stopPropagation(); });
-
-	svg.style("opacity", 1e-6)
-	  .transition()
-	    .duration(1000)
-	    .style("opacity", 1);
-
-	d3.select("body")
-	    .on("mousedown", mousedown);
-
-	function tick(e) {
-
-	  // Push different nodes in different directions for clustering.
-	  var k = 6 * e.alpha;
-	  nodes.forEach(function(o, i) {
-	    o.y += i & 1 ? k : -k;
-	    o.x += i & 2 ? k : -k;
-	  });
-
-	  node.attr("cx", function(d) { return d.x; })
-	      .attr("cy", function(d) { return d.y; });
-	}
-
-	function mousedown() {
-	  nodes.forEach(function(o, i) {
-	    o.x += (Math.random() - .5) * 40;
-	    o.y += (Math.random() - .5) * 40;
-	  });
-	  force.resume();
-	}
-
-	return {
-  		restrict: 'E',
-  		scope: {
-  			data: '='
-  		}
-  	}
-  });
 
   app.directive('magnet', function(){
 
@@ -116,6 +47,7 @@
 		    .start();
 
 		force.charge(function(node) {
+				if (node.type=="point");
 				return -30;
 		    });
 
@@ -146,7 +78,7 @@
 			node = node.data(force.nodes(), function(d) { return d.id;});
 			node.enter().append("circle")
 			  				.attr("r", 8)
-			  				.attr("class", 'dataPoint')
+			  				.attr("class", 'point')
 			  				.attr("magnet",0);
 			node.exit().remove();
 
@@ -156,18 +88,15 @@
 		function startMagnet() {
 			node = node.data(force.nodes(), function(d) { return d.id;});
 			node.enter().append("circle")
-			  				.attr("r", 10)
+			  				.attr("r", 15)
 			  				.attr("class", 'magnet')
 			  				.attr("cx",(Math.random() * (width-50))+25)
 			  				.attr("cy",(Math.random() * (height-75))+25)
-			  				.attr("magnet",1)
 			  				.call(force.drag);
 			node.exit().remove();
 
 			force.start();
 		}
-
-        scope.showCreate = false;
 
 	    magnet.fields1 = [
 	        {name:'2014'},
@@ -189,31 +118,16 @@
 	    				magneticMove();
 	    			});
 
-	    var magneticMove = function(){
-	    	var dataPoints = svg.selectAll(".dataPoint");
-	    	var magnets = svg.selectAll(".magnet");
 
-	    	for(i=0;i<dataPoints.length;i++){
-	    		var xMagnetTotal=0;
-	    		var yMagnetTotal=0;
-	    		for(j=0;j<magnets.length;j++){
-	    			xMagnetTotal+=magnet[j].cx;
-	    			yMagnetTotal+=magnet[j].cy;
-	    		}
-	    		var newX = xMagnetTotal / (magnets.length);
-	    		var newY = yMagnetTotal / (magnets.length);
-	    		dataPoints[i].transition()
-				  .attr("cx", newX)
-				  .attr("cy", newY);
-	    	}
-	    }
+	    var magnetCount = 0;
 		scope.submit = function(){
+			console.log(nodes);
 	    	scope.showCreate = false;
 	    	var newX = (Math.random() * (width-50))+25;
 	    	var newY = (Math.random() * (height-75))+25;
-	    	var a = {};
-	  		nodes.push({});
-		  	
+	    	var a = {type:"magnet"};
+	  		nodes.push(a);
+		  	magnetCount++;
 			startMagnet();
 			tick();							
 	    }
@@ -221,7 +135,7 @@
   		scope.$watch('data', function(data){
 	  		if(data){	
 	  			for (i=0;i<data.length;i++){
-	  				var a = {id:i};
+	  				var a = {id:i, type:"point"};
 	  				nodes.push(a);
 	  			}
 	  			startData();
@@ -238,6 +152,95 @@
   	}
   });
 })();
+
+ //  app.directive('test', function(){
+ //  	var width = window.innerWidth-200;
+ //  	var height = 600;
+
+	// var fill = d3.scale.category10();
+
+	// var nodes = d3.range(100).map(function(i) {
+	//   return {index: i};
+	// });
+
+	// var force = d3.layout.force()
+	//     .nodes(nodes)
+	//     .size([width, height])
+	//     .on("tick", tick)
+	//     .start();
+
+	// var svg = d3.select("body").append("svg")
+	//     .attr("width", width)
+	//     .attr("height", height)
+	//     .style('border', '1px solid lightgrey');
+
+	// var node = svg.selectAll(".node")
+	//     .data(nodes)
+	//   .enter().append("circle")
+	//     .attr("class", "node")
+	//     .attr("cx", function(d) { return d.x; })
+	//     .attr("cy", function(d) { return d.y; })
+	//     .attr("r", 8)
+	//     .style("fill", function(d, i) { return fill(i & 3); })
+	//     .style("stroke", function(d, i) { return d3.rgb(fill(i & 3)).darker(2); })
+	//     .call(force.drag)
+	//     .on("mousedown", function() { d3.event.stopPropagation(); });
+
+	// svg.style("opacity", 1e-6)
+	//   .transition()
+	//     .duration(1000)
+	//     .style("opacity", 1);
+
+	// d3.select("body")
+	//     .on("mousedown", mousedown);
+
+	// function tick(e) {
+
+	//   // Push different nodes in different directions for clustering.
+	//   var k = 6 * e.alpha;
+	//   nodes.forEach(function(o, i) {
+	//     o.y += i & 1 ? k : -k;
+	//     o.x += i & 2 ? k : -k;
+	//   });
+
+	//   node.attr("cx", function(d) { return d.x; })
+	//       .attr("cy", function(d) { return d.y; });
+	// }
+
+	// function mousedown() {
+	//   nodes.forEach(function(o, i) {
+	//     o.x += (Math.random() - .5) * 40;
+	//     o.y += (Math.random() - .5) * 40;
+	//   });
+	//   force.resume();
+	// }
+
+	// return {
+ //  		restrict: 'E',
+ //  		scope: {
+ //  			data: '='
+ //  		}
+ //  	}
+ //  });
+////////////////////////////////////////
+	    // var magneticMove = function(){
+	    // 	var points = svg.selectAll(".point");
+	    // 	var magnets = svg.selectAll(".magnet");
+
+	    // 	for(i=0;i<points.length;i++){
+	    // 		var xMagnetTotal=0;
+	    // 		var yMagnetTotal=0;
+	    // 		for(j=0;j<magnets.length;j++){
+	    // 			xMagnetTotal+=magnet[j].cx;
+	    // 			yMagnetTotal+=magnet[j].cy;
+	    // 		}
+	    // 		var newX = xMagnetTotal / (magnets.length);
+	    // 		var newY = yMagnetTotal / (magnets.length);
+	    // 		points[i].transition()
+				 //  .attr("cx", newX)
+				 //  .attr("cy", newY);
+	    // 	}
+	    // }
 
  //    this.killings = [];
 
