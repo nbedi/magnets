@@ -1,0 +1,24 @@
+
+<div style="zoom:75%;zoom:.75">
+<div class="row">
+	<div class="small-4 columns">
+		<label >First field</label>
+		<select ng-model="selectedLeft" ng-options="left for left in lefts"/>
+	</div>
+	<div class="small-4 columns">
+		<label>Comparator</label>
+		<select ng-model="selectedComp" ng-options="comp for comp in comps"/>
+	</div>
+	<div class="small-4 columns">
+		<label>Second field</label>
+		<select ng-model="selectedRight" ng-options="right for right in rights"/>
+	</div>
+</div>
+
+<div class="row" >
+	<button ng-click="submit()">Create Magnet</button>
+</div>
+</style>
+
+		<!-- <button>Add statement</button> -->
+
