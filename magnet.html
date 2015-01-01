@@ -3,16 +3,15 @@
 <div class="row">
 	<div class="small-4 columns">
 		<label >First field</label>
-		{{fields1}}
-		<select ng-model="myField1" ng-options="field1.name for field1 in fields1" ng-init="test"/></select>
+		<select ng-model="selectedLeft" ng-options="left for left in lefts"/>
 	</div>
 	<div class="small-4 columns">
 		<label>Comparator</label>
-		<select type="text" /></select>
+		<select ng-model="selectedComp" ng-options="comp for comp in comps"/>
 	</div>
 	<div class="small-4 columns">
 		<label>Second field</label>
-		<select ng-options="field2.name for field2 in fields2" type="text" /></select>
+		<select ng-model="selectedRight" ng-options="right for right in rights"/>
 	</div>
 </div>
 

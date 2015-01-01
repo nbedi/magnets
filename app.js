@@ -8,6 +8,14 @@
 	        desc:'"Listed below are lists of people killed by nonmilitary law enforcement officers, whether in the line of duty or not, and regardless of reason or method. Inclusion in the lists implies neither wrongdoing nor justification on the part of the person killed or the officer involved. The listing merely documents the occurrence of a death. The lists below are incomplete, as the annual average number of justifiable homicides alone is estimated to be near 400. Although Congress instructed the Attorney General in 1994 to compile and publish annual statistics on police use of excessive force, this was never carried out, and the FBI does not collect this data either."',
 	    	link:'http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States'};
 
+  var numComps = ['equals','greater than'];
+  var numRights = ['input','other'];
+
+  var strComps = ['contains', 'starts with'];
+  var strRights = ['sInput','sOther'];
+
+
+
 app.controller('MagnetController', function($http, $scope){
    	var viz = this;
    	$scope.myDataset=dataset;
@@ -68,16 +76,6 @@ app.directive('magnet', function(){
 			force.start();
 		}
 
-	    magnet.fields1 = [
-	        {name:'2014'},
-	        {name:'2013'},
-	        {name:'2012'},
-	        {name:'2011'},
-	        {name:'2010'}
-	    ];
-
-	    magnet.myField1 = [{name:"test"}];
-
 	    var drag = d3.behavior.drag()
 	    			.on('drag', function() {
 	    				var circle = d3.select(this);
@@ -100,6 +98,22 @@ app.directive('magnet', function(){
 
   		scope.$watch('data', function(data){
 	  		if(data){	
+	  			scope.lefts = Object.keys(data[0]);
+	  			scope.selectedLeft = scope.lefts[0];
+
+	  			if(typeof(eval("data[0]."+scope.selectedLeft))=="string") {
+	  				scope.comps = strComps;
+	  				scope.rights = strRights;
+	  				
+	  			}
+	  			if(typeof(eval("data[0]."+scope.selectedLeft))=="number") {
+	  				scope.comps = numComps;
+	  				scope.rights = numRights;
+	  			}
+	  			scope.selectedComp = scope.comps[0];
+	  			scope.selectedRight = scope.rights[0];
+
+	  			//generate dataPoint nodes
 	  			for (i=0;i<data.length;i++){
 	  				var a = {id:i, type:"point"};
 	  				nodes.push(a);
