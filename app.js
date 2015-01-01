@@ -61,10 +61,39 @@ app.directive('magnet', function(){
         var magnets = svg.selectAll(".magnet");
 
 		function tick(e) {
-			if (magnets[0].length>0) {
+			magnets = d3.selectAll(".magnet");
+			if (magnets[0].length > 0) {
+				console.log(magnets[0][0]);
 			}
-			node.attr("cx", function(d) { return d.x; })
-      			.attr("cy", function(d) { return d.y; });
+			node.transition().duration(50)
+			.attr("cx", function(d) { 
+				if (magnets[0].length > 0) {
+					var newX = 0;
+					var xCount = 0;
+					for (i = 0; i < magnets[0].length; i++){
+						if (true) {
+							newX = newX + magnets[0][i].cx.baseVal.value;
+							xCount = xCount + 1;
+						}
+					}
+					newX = newX / xCount;
+					return d.x - (width/2)+ newX;
+				}
+				return d.x; 
+			}).attr("cy", function(d) { 
+      			if (magnets[0].length > 0) {
+      				var newY = 0;
+      				var yCount =0;
+					for (i = 0; i < magnets[0].length; i++){
+						if (true) {
+							newY = newY + magnets[0][i].cy.baseVal.value;
+							yCount = yCount + 1;
+						}
+					}
+					newY = newY / yCount;
+					return d.y - (height/2)+ newY;
+				}
+      				return d.y; });
 		}
 
 		function startData() {
