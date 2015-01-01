@@ -62,9 +62,7 @@ app.directive('magnet', function(){
 
 		function tick(e) {
 			magnets = d3.selectAll(".magnet");
-			if (magnets[0].length > 0) {
-				console.log(magnets[0][0]);
-			}
+
 			node.transition().duration(50)
 			.attr("cx", function(d) { 
 				if (magnets[0].length > 0) {
@@ -110,6 +108,7 @@ app.directive('magnet', function(){
 	    				var circle = d3.select(this);
 	    				circle.attr('cx', d3.event.x)
 	    						.attr('cy', d3.event.y);
+	    					tick();
 	    					});
 
 		scope.submit = function(){
@@ -144,7 +143,8 @@ app.directive('magnet', function(){
 
 	  			//generate dataPoint nodes
 	  			for (i=0;i<data.length;i++){
-	  				var a = {id:i, type:"point"};
+	  				var a = {id:i, data:data[i], type:"point"};
+	  				console.log(a);
 	  				nodes.push(a);
 	  			}
 	  			startData();
