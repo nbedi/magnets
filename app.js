@@ -8,12 +8,19 @@
 	        desc:'"Listed below are lists of people killed by nonmilitary law enforcement officers, whether in the line of duty or not, and regardless of reason or method. Inclusion in the lists implies neither wrongdoing nor justification on the part of the person killed or the officer involved. The listing merely documents the occurrence of a death. The lists below are incomplete, as the annual average number of justifiable homicides alone is estimated to be near 400. Although Congress instructed the Attorney General in 1994 to compile and publish annual statistics on police use of excessive force, this was never carried out, and the FBI does not collect this data either."',
 	    	link:'http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States'};
 
-  var numComps = ['equals','greater than'];
+  var numComps = ['equals', 'greater than', 'less than', ];
   var numRights = ['input','other'];
 
-  var strComps = ['contains', 'starts with'];
+  var strComps = ['contains', 'starts with', 'before', 'after'];
   var strRights = ['sInput','sOther'];
 
+  var dateComps = ['before', 'after', 'equals'];
+  var dateRights = ['2014-01-10', '2014-01-04', '2014-01-20'];
+
+  function isDate(val) {
+	    var d = new Date(val);
+	    return !isNaN(d.valueOf());
+	}
 
 
 app.controller('MagnetController', function($http, $scope){
@@ -124,19 +131,37 @@ app.directive('magnet', function(){
 			tick();				
 	    }
 
+	    scope.$watch('selectedLeft', function(left){
+	    	if(scope.data){
+	    		if(isDate(eval("scope.data[0]."+left))){
+	  				scope.comps = dateComps;
+	  				scope.rights = dateRights;
+	  			}else if(typeof(eval("scope.data[0]."+left))=="number") {
+	  				scope.comps = numComps;
+	  				scope.rights = numRights;
+	  			}else if(typeof(eval("scope.data[0]."+left))=="string") {
+	  				scope.comps = strComps;
+	  				scope.rights = strRights;
+	  			}
+	  			scope.selectedComp = scope.comps[0];
+	  			scope.selectedRight = scope.rights[0];
+	  		}
+	    })
+
   		scope.$watch('data', function(data){
 	  		if(data){	
 	  			scope.lefts = Object.keys(data[0]);
 	  			scope.selectedLeft = scope.lefts[0];
 
-	  			if(typeof(eval("data[0]."+scope.selectedLeft))=="string") {
-	  				scope.comps = strComps;
-	  				scope.rights = strRights;
-	  				
-	  			}
-	  			if(typeof(eval("data[0]."+scope.selectedLeft))=="number") {
+	  			if(isDate(eval("data[0]."+scope.selectedLeft))){
+	  				scope.comps = dateComps;
+	  				scope.rights = dateRights;
+	  			}else if(typeof(eval("data[0]."+scope.selectedLeft))=="number") {
 	  				scope.comps = numComps;
 	  				scope.rights = numRights;
+	  			}else if(typeof(eval("data[0]."+scope.selectedLeft))=="string") {
+	  				scope.comps = strComps;
+	  				scope.rights = strRights;
 	  			}
 	  			scope.selectedComp = scope.comps[0];
 	  			scope.selectedRight = scope.rights[0];
@@ -144,7 +169,6 @@ app.directive('magnet', function(){
 	  			//generate dataPoint nodes
 	  			for (i=0;i<data.length;i++){
 	  				var a = {id:i, data:data[i], type:"point"};
-	  				console.log(a);
 	  				nodes.push(a);
 	  			}
 	  			startData();

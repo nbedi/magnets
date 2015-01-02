@@ -1,9 +1,13 @@
 .point {
-  fill: purple;
+	fill: purple;
 }
 
 .magnet {
-  fill: orange;
+	fill: orange;
+}
+
+.magnet:hover {
+	cursor: move;
 }
 
 .dataDesc {
