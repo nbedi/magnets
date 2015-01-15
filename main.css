@@ -20,7 +20,7 @@ body{
 	margin-bottom: 2%;
 }
 
-h1{
+h2{
 	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
 	color: #333;
 }
@@ -30,6 +30,10 @@ table{
 	margin-right: 5%;
 	margin-top: 2%;
 	margin-bottom: 2%;
+}
+
+p{
+	font-size: 0.8rem;
 }
 
 .sort:hover {
