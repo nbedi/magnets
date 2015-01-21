@@ -16,8 +16,10 @@
 </div>
 <!-- <button>Add statement</button> -->
 <div class="row" >
-	<button ng-click="submit()">Create Magnet</button>
-	<p>{{invalidInput}}</p>
+	<div class="small-4 columns">&nbsp;</div>
+	<div class="small-4 columns">
+	<button ng-click="submit()">Create Magnet</button></div>
+	<div class="small-4 columns"><label ng-show="invalidInd" style="color:red;">{{invalidInput}}</label></div>
 </div>
 </style>
 
