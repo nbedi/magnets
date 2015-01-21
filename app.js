@@ -4,7 +4,7 @@
 	var dataset = 
 	        {name:'List of killings by law enforcement officers in the United States', 
 	        data:'test2.json', 
-	        from:'Wikipedia',
+	        from:'Wikipedia, parsed with BeautifulSoup',
 	        desc:'"Listed below are lists of people killed by nonmilitary law enforcement officers, whether in the line of duty or not, and regardless of reason or method. Inclusion in the lists implies neither wrongdoing nor justification on the part of the person killed or the officer involved. The listing merely documents the occurrence of a death. The lists below are incomplete, as the annual average number of justifiable homicides alone is estimated to be near 400. Although Congress instructed the Attorney General in 1994 to compile and publish annual statistics on police use of excessive force, this was never carried out, and the FBI does not collect this data either."',
 	    	link:'http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States'};
 
@@ -47,7 +47,7 @@ app.directive('magnet', function(){
   		var operate = {
   			'<': function(x,y) { return x < y},
   			'>': function(x,y) { return x > y},
-  			'contains': function(x,y) { return x.indexOf(y)>-1}
+  			'contains': function(x,y) { if (x&&y) {return x.indexOf(y)>-1} else return false}
   		}
 
 	  	function getLeftType(val) {
@@ -102,7 +102,7 @@ app.directive('magnet', function(){
 		}
 
   		el = el[0];
-  		var width = window.innerWidth -200;
+  		var width = window.innerWidth -150;
   		var height = width*.5;
   		var radius = 10;
 
@@ -127,7 +127,7 @@ app.directive('magnet', function(){
 
         var tipMagnet = d3.tip()
 		  .attr('class', 'd3-tip')
-		  .offset([-28, -60])
+		  .offset([-24, -50])
 		  .direction('e')
 		  .html(function(d) {
 		    return (d.left + ' ' + d.comparator.name + ' '+ d.right);
@@ -135,7 +135,7 @@ app.directive('magnet', function(){
 
 		var tipPoint = d3.tip()
 		  .attr('class', 'd3-tip')
-		  .offset([-28, -60])
+		  .offset([-24, -50])
 		  .direction('e')
 		  .html(function(d) {
 		    return ('Point '+d.id);
@@ -152,7 +152,8 @@ app.directive('magnet', function(){
 			nodes.forEach(function(o,i) {
 				if (magnets[0].length > 0) {
 					var newX = 0;
-					var xCount = 0;
+					var pCount = 0;
+					var newY = 0;
 					for (i = 0; i < magnets[0].length; i++){
 						var left = magnets.data()[i].left;
 						var right = magnets.data()[i].right;
@@ -161,43 +162,43 @@ app.directive('magnet', function(){
 						{
 							if (isTrue(node.data()[nodeNumX].data,left,comp,right)) {
 								newX = newX + magnets[0][i].cx.baseVal.value;
-								xCount = xCount + 1;
+								newY = newY + magnets[0][i].cy.baseVal.value;
+								pCount = pCount + 1;
 							}
 						}
 					}
-					newX = newX / xCount;
+					newX = newX / pCount;
 					nodeNumX = nodeNumX+1;
 					if (newX > 0)
 						o.x += (newX-(width/2)) * k;
       				
-      				var newY = 0;
-      				var yCount =0;
-					for (i = 0; i < magnets[0].length; i++){
-						var left = magnets.data()[i].left;
-
-						var right = magnets.data()[i].right;
-						var comp = magnets.data()[i].comparator;
-						if (isTrue(node.data()[nodeNumY].data,left,comp,right)) {
-							newY = newY + magnets[0][i].cy.baseVal.value;
-							yCount = yCount + 1;
-						}
-					}
 					nodeNumY = nodeNumY+1;
-					newY = newY / yCount;
+					newY = newY / pCount;
 					if (newY > 0)
 						o.y += (newY-(height/2)) * k;
 				}
 			});
 			node.transition().duration(30)
-			.attr("cx", function(d) { return d.x; })
-			.attr("cy", function(d) { return d.y; });
+			.attr("cx", function(d) { return d.x = Math.max(radius/3, Math.min(width - radius/3, d.x)); })
+			.attr("cy", function(d) { return d.y = Math.max(radius/3, Math.min(height - radius/3, d.y)); });
 		}
 
 		function startData() {
 			node = node.data(force.nodes(), function(d) { return d.id;});
 			node.enter().append("circle")
-			  				.attr("r", 3)
+			  				.attr("r", radius/3)
 			  				.attr("class", 'point')
+			  				.on('mouseover', tipPoint.show)
+			  				.on('mouseout', tipPoint.hide);
+			node.exit().remove();
+			force.start();
+		}
+
+		function startMagnet() {
+			node = node.data(force.nodes(), function(d) { return d.id;});
+			node.enter().append("circle")
+			  				.attr("r", radius/3)
+			  				.attr("class", 'magnet')
 			  				.on('mouseover', tipPoint.show)
 			  				.on('mouseout', tipPoint.hide);
 			node.exit().remove();
@@ -208,14 +209,14 @@ app.directive('magnet', function(){
 	    			.on('drag', function() {
 	    				tipMagnet.hide();
 	    				var circle = d3.select(this);
-	    				if ((d3.event.x > circle[0][0].r.baseVal.value) &&
-	    					(d3.event.x < width - circle[0][0].r.baseVal.value) &&
-	    					(d3.event.y > circle[0][0].r.baseVal.value) &&
-	    					(d3.event.y < height - circle[0][0].r.baseVal.value)){
-		    				circle.attr('cx', d3.event.x)
-		    						.attr('cy', d3.event.y);
+	    				// if ((d3.event.x > circle[0][0].r.baseVal.value) &&
+	    				// 	(d3.event.x < width - circle[0][0].r.baseVal.value) &&
+	    				// 	(d3.event.y > circle[0][0].r.baseVal.value) &&
+	    				// 	(d3.event.y < height - circle[0][0].r.baseVal.value)){
+		    				circle.attr('cx',  Math.max(radius, Math.min(width - radius, d3.event.x)))
+		    						.attr('cy',  Math.max(radius, Math.min(height - radius, d3.event.y)))
 		    				force.start();
-	    				}
+	    				// }
 	    					});
 
 		scope.submit = function(){
@@ -275,7 +276,7 @@ app.directive('magnet', function(){
 	  			scope.selectedRight = "";
 
 	  			//generate dataPoint nodes
-	  			for (i=0;i<(data.length/4);i++){
+	  			for (i=0;i<(data.length/3);i++){
 	  				var a = {id:i, data:data[i], type:"point"};
 	  				nodes.push(a);
 	  			}
