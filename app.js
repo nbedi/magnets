@@ -96,7 +96,7 @@ app.directive('magnet', function(){
 		}
 
 		function errorCheck(val) {
-			scope.invalidInput = "Input is invalid";
+			//scope.invalidInput = "Input is invalid";
 			scope.invalidInd = true;
 			return true;
 		}
