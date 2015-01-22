@@ -11,7 +11,7 @@
 	var numComps = [{name:'equals'}, {name:'greater than'}, {name:'less than'}];
 	var numRights = ['input','other'];
 
-	var strComps = [{name:'contains', op:'contains'}, {name:'before (alphabetically)', op:'<'}, {name:'after (alphabetically)', op:'>'}];
+	var strComps = [{name:'equals (not case sensitive)', op:'strEq'}, {name:'equals (case sensitive)', op:'='}, {name:'contains (not case sensitive)', op:'contains'}];
 	var strRights = ['sInput','sOther'];
 
 	var dateComps = [{name:'before', op: '<'}, {name:'after', op: '>'}, {name:'equals', op:'='}];
@@ -45,9 +45,11 @@ app.directive('magnet', function(){
   	function link(scope, el, attr){
 
   		var operate = {
+  			'=': function(x,y) { return x === y},
+  			'strEq': function(x,y) { return x.toLowerCase() == y.toLowerCase()},
   			'<': function(x,y) { return x < y},
   			'>': function(x,y) { return x > y},
-  			'contains': function(x,y) { if (x&&y) {return x.indexOf(y)>-1} else return false}
+  			'contains': function(x,y) { if (x&&y) {return (x.toLowerCase()).indexOf(y.toLowerCase())>-1} else return false}
   		}
 
 	  	function getLeftType(val) {
@@ -95,9 +97,18 @@ app.directive('magnet', function(){
 			return true;
 		}
 
-		function errorCheck(val) {
-			//scope.invalidInput = "Input is invalid";
-			scope.invalidInd = true;
+		function errorCheck(left, right) {
+			if (right=="") {
+				scope.invalidInput = "Second field cannot be empty.";
+				scope.invalidInd = true;
+				return false;
+			}
+			if (getLeftType(left)!=getType(right)) {
+				scope.invalidInput = "Second field type does not match first field type.";
+				scope.invalidInd = true;
+				return false;
+			}
+			scope.invalidInd = false;
 			return true;
 		}
 
@@ -158,13 +169,10 @@ app.directive('magnet', function(){
 						var left = magnets.data()[i].left;
 						var right = magnets.data()[i].right;
 						var comp = magnets.data()[i].comparator;
-						if (errorCheck(right))
-						{
-							if (isTrue(node.data()[nodeNumX].data,left,comp,right)) {
-								newX = newX + magnets[0][i].cx.baseVal.value;
-								newY = newY + magnets[0][i].cy.baseVal.value;
-								pCount = pCount + 1;
-							}
+						if (isTrue(node.data()[nodeNumX].data,left,comp,right)) {
+							newX = newX + magnets[0][i].cx.baseVal.value;
+							newY = newY + magnets[0][i].cy.baseVal.value;
+							pCount = pCount + 1;
 						}
 					}
 					newX = newX / pCount;
@@ -209,33 +217,28 @@ app.directive('magnet', function(){
 	    			.on('drag', function() {
 	    				tipMagnet.hide();
 	    				var circle = d3.select(this);
-	    				// if ((d3.event.x > circle[0][0].r.baseVal.value) &&
-	    				// 	(d3.event.x < width - circle[0][0].r.baseVal.value) &&
-	    				// 	(d3.event.y > circle[0][0].r.baseVal.value) &&
-	    				// 	(d3.event.y < height - circle[0][0].r.baseVal.value)){
-		    				circle.attr('cx',  Math.max(radius, Math.min(width - radius, d3.event.x)))
-		    						.attr('cy',  Math.max(radius, Math.min(height - radius, d3.event.y)))
-		    				force.start();
-	    				// }
+	    				circle.attr('cx',  Math.max(radius, Math.min(width - radius, d3.event.x)))
+	    						.attr('cy',  Math.max(radius, Math.min(height - radius, d3.event.y)))
+	    				force.start();
 	    					});
 
 		scope.submit = function(){
 			//refactor to use force layout!
 	    	var newData = [{left:scope.selectedLeft, comparator:scope.selectedComp, right:scope.selectedRight}];
-
-	    	var newX = (Math.random() * (width-250))+25;
-	    	var newY = (Math.random() * (height-75))+25;
-	    	svg.append('circle').data(newData)
-	    						.attr("cx", newX)
-								.attr("cy", newY)
-								.attr("r", radius)
-								.attr('class', 'magnet')
-								.call(drag)
-								.style("fill", "orange")
-								.on('mouseover', tipMagnet.show)
-      							.on('mouseout', tipMagnet.hide);	
-			force.start();
-
+	    	if (errorCheck(scope.selectedLeft, scope.selectedRight)) {
+		    	var newX = (Math.random() * (width-250))+25;
+		    	var newY = (Math.random() * (height-75))+25;
+		    	svg.append('circle').data(newData)
+		    						.attr("cx", newX)
+									.attr("cy", newY)
+									.attr("r", radius)
+									.attr('class', 'magnet')
+									.call(drag)
+									.style("fill", "orange")
+									.on('mouseover', tipMagnet.show)
+	      							.on('mouseout', tipMagnet.hide);	
+				force.start();
+			}
 	    }
 
 	    scope.$watch('selectedLeft', function(left){
@@ -277,7 +280,7 @@ app.directive('magnet', function(){
 
 	  			//generate dataPoint nodes
 	  			for (i=0;i<(data.length/3);i++){
-	  				var a = {id:i, data:data[i], type:"point"};
+	  				var a = {id:i, data:data[i%(data.length)], type:"point"};
 	  				nodes.push(a);
 	  			}
 	  			startData();
