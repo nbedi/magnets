@@ -15,7 +15,7 @@
 	        desc:'From NamUs: "The National Missing and Unidentified Persons System (NamUs) is a national centralized repository and resource center for missing persons and unidentified decedent records. The Missing Persons Database contains information about missing persons that can be entered by anyone; however before it appears as a case on NamUs, the information is verified."',
 	    	link:'https://www.findthemissing.org/en'};
 
-	var numComps = [{name:'equals'}, {name:'greater than'}, {name:'less than'}];
+	var numComps = [{name:'equals', op:'='}, {name:'greater than', op:'>'}, {name:'less than', op:'<'}];
 	var numRights = ['input','other'];
 
 	var strComps = [{name:'equals (not case sensitive)', op:'strEq'}, {name:'equals (case sensitive)', op:'='}, {name:'contains (not case sensitive)', op:'contains'}];
@@ -52,7 +52,7 @@ app.directive('magnet', function(){
   	function link(scope, el, attr){
 
   		var operate = {
-  			'=': function(x,y) { return x === y},
+  			'=': function(x,y) { return x.valueOf() == y.valueOf()},
   			'strEq': function(x,y) { return x.toLowerCase() == y.toLowerCase()},
   			'<': function(x,y) { return x < y},
   			'>': function(x,y) { return x > y},
@@ -61,20 +61,22 @@ app.directive('magnet', function(){
 
 	  	function getLeftType(val) {
 	  		if(scope.data){
-				if(isDate(eval("scope.data[0]."+val))){
-					return "date";
-				}else if(typeof(eval("scope.data[0]."+val))=="number") {
+				// if(getType(eval("scope.data[0]."+val))=="date"){
+				// 	return "date";
+				// }else 
+				if(getType(eval("scope.data[0]."+val))=="number") {
 					return "number";
-				}else if(typeof(eval("scope.data[0]."+val))=="string") {
+				}else if(getType(eval("scope.data[0]."+val))=="string") {
 					return "string";
 				}
 			}
 		}
 
 		function getType(val) {
-			if(isDate(val)){
-				return "date";
-			}else if(typeof(val)=="number") {
+			// if(isDate(val)){
+			// 	return "date";
+			// }else 
+			if(Number(val)) {
 				return "number";
 			}else {
 				return "string";
@@ -97,9 +99,9 @@ app.directive('magnet', function(){
 				var leftData = getData(eval("data."+left));
 				var rightData = getData(right);
 				var test = operate[comp.op](leftData,rightData);
-				
-				if (!(test))
+				if (!(test)) {
 					return false;
+				}
 			}
 			return true;
 		}
@@ -261,13 +263,13 @@ app.directive('magnet', function(){
 
 	    scope.$watch('selectedLeft', function(left){
 	    	if(scope.data){
-	    		if(isDate(eval("scope.data[0]."+left))){
+	    		if(getLeftType(left)=="date"){
 	  				scope.comps = dateComps;
 	  				// scope.rights = dateRights;
-	  			}else if(typeof(eval("scope.data[0]."+left))=="number") {
+	  			}else if(getLeftType(left)=="number") {
 	  				scope.comps = numComps;
 	  				// scope.rights = numRights;
-	  			}else if(typeof(eval("scope.data[0]."+left))=="string") {
+	  			}else if(getLeftType(left)=="string") {
 	  				scope.comps = strComps;
 	  				// scope.rights = strRights;
 	  			}
@@ -292,13 +294,13 @@ app.directive('magnet', function(){
 	  			scope.lefts = Object.keys(data[0]);
 	  			scope.selectedLeft = scope.lefts[0];
 	  			scope.invalidInput = "";
-	  			if(isDate(eval("data[0]."+scope.selectedLeft))){
+	  			if(getLeftType(eval("data[0]."+scope.selectedLeft))=="date"){
 	  				scope.comps = dateComps;
 	  				// scope.rights = dateRights;
-	  			}else if(typeof(eval("data[0]."+scope.selectedLeft))=="number") {
+	  			}else if(getLeftType(eval("data[0]."+scope.selectedLeft))=="number") {
 	  				scope.comps = numComps;
 	  				// scope.rights = numRights;
-	  			}else if(typeof(eval("data[0]."+scope.selectedLeft))=="string") {
+	  			}else if(getLeftType(eval("data[0]."+scope.selectedLeft))=="string") {
 	  				scope.comps = strComps;
 	  				// scope.rights = strRights;
 	  			}
@@ -307,7 +309,7 @@ app.directive('magnet', function(){
 	  			scope.selectedRight = "";
 	  			console.log(data.length);
 	  			//generate dataPoint nodes
-	  			for (i=0;i<(data.length/3);i++){
+	  			for (i=0;i<(data.length/6);i++){
 	  				var newD = data[i];
 	  				//TODO: refactor soon
 	  				delete newD.photo;
