@@ -110,7 +110,7 @@ app.directive('magnet', function(){
 				scope.invalidInd = true;
 				return false;
 			}
-			if (getLeftType(left)!=getType(right)) {
+			if (getLeftType(left)!=getType(right) && !(getLeftType(left)=="string")) {
 				scope.invalidInput = "Second field type does not match first field type.";
 				scope.invalidInd = true;
 				return false;
