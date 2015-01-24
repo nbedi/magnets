@@ -1,12 +1,19 @@
 (function() {
 	var app = angular.module('magnet', []);
 
+	// var dataset = 
+	//         {name:'List of killings by law enforcement officers in the United States', 
+	//         data:'test.json', 
+	//         from:'Wikipedia, parsed with BeautifulSoup',
+	//         desc:'"Listed below are lists of people killed by nonmilitary law enforcement officers, whether in the line of duty or not, and regardless of reason or method. Inclusion in the lists implies neither wrongdoing nor justification on the part of the person killed or the officer involved. The listing merely documents the occurrence of a death. The lists below are incomplete, as the annual average number of justifiable homicides alone is estimated to be near 400. Although Congress instructed the Attorney General in 1994 to compile and publish annual statistics on police use of excessive force, this was never carried out, and the FBI does not collect this data either."',
+	//     	link:'http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States'};
+
 	var dataset = 
-	        {name:'List of killings by law enforcement officers in the United States', 
+	        {name:'List of open missing person cases in California', 
 	        data:'test2.json', 
-	        from:'Wikipedia, parsed with BeautifulSoup',
-	        desc:'"Listed below are lists of people killed by nonmilitary law enforcement officers, whether in the line of duty or not, and regardless of reason or method. Inclusion in the lists implies neither wrongdoing nor justification on the part of the person killed or the officer involved. The listing merely documents the occurrence of a death. The lists below are incomplete, as the annual average number of justifiable homicides alone is estimated to be near 400. Although Congress instructed the Attorney General in 1994 to compile and publish annual statistics on police use of excessive force, this was never carried out, and the FBI does not collect this data either."',
-	    	link:'http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States'};
+	        from:'National Missing and Unidentified Persons System (NamUs), parsed with find-us.herokuapp.com.',
+	        desc:'From NamUs: "The National Missing and Unidentified Persons System (NamUs) is a national centralized repository and resource center for missing persons and unidentified decedent records. The Missing Persons Database contains information about missing persons that can be entered by anyone; however before it appears as a case on NamUs, the information is verified."',
+	    	link:'https://www.findthemissing.org/en'};
 
 	var numComps = [{name:'equals'}, {name:'greater than'}, {name:'less than'}];
 	var numRights = ['input','other'];
@@ -114,7 +121,7 @@ app.directive('magnet', function(){
 
   		el = el[0];
   		var width = window.innerWidth -150;
-  		var height = width*.5;
+  		var height = width*.4;
   		var radius = 10;
 
   		var fill = d3.scale.category10();
@@ -149,7 +156,13 @@ app.directive('magnet', function(){
 		  .offset([-24, -50])
 		  .direction('e')
 		  .html(function(d) {
-		    return ('Point '+d.id);
+		  	// var tipString = "";
+		  	// var fields = Object.keys(d.data);
+		  	// console.log(fields);
+		  	// for (f = 0; f < fields.length; f++){
+		  	// 	tipString = tipString + (fields[f] + ": ") + (eval("d.data."+fields[f])) + "\n ";
+		  	// }
+		    return (d.data.first_name + " " + d.data.last_name);
 		  })
 
 		svg.call(tipMagnet);
@@ -194,7 +207,7 @@ app.directive('magnet', function(){
 		function startData() {
 			node = node.data(force.nodes(), function(d) { return d.id;});
 			node.enter().append("circle")
-			  				.attr("r", radius/3)
+			  				.attr("r", radius/4)
 			  				.attr("class", 'point')
 			  				.on('mouseover', tipPoint.show)
 			  				.on('mouseout', tipPoint.hide);
@@ -205,7 +218,7 @@ app.directive('magnet', function(){
 		function startMagnet() {
 			node = node.data(force.nodes(), function(d) { return d.id;});
 			node.enter().append("circle")
-			  				.attr("r", radius/3)
+			  				.attr("r", radius/4)
 			  				.attr("class", 'magnet')
 			  				.on('mouseover', tipPoint.show)
 			  				.on('mouseout', tipPoint.hide);
@@ -241,6 +254,11 @@ app.directive('magnet', function(){
 			}
 	    }
 
+	    scope.clearMagnets = function(){
+	    	magnets = svg.selectAll(".magnet");
+	    	magnets.remove();
+	    }
+
 	    scope.$watch('selectedLeft', function(left){
 	    	if(scope.data){
 	    		if(isDate(eval("scope.data[0]."+left))){
@@ -261,6 +279,16 @@ app.directive('magnet', function(){
   		scope.$watch('data', function(data){
 	  		if(data){	
 	  			scope.invalidInd = false;
+	  			//TODO: refactor soon
+	  			delete data[0].photo;
+	  			delete data[0].agency_name;
+	  			delete data[0].org;
+	  			delete data[0].agency_contact;
+	  			delete data[0].namus_number;
+	  			delete data[0].ncmec_number;
+	  			delete data[0].org_contact;
+	  			delete data[0].aged_photo;
+	  			delete data[0].org_name;
 	  			scope.lefts = Object.keys(data[0]);
 	  			scope.selectedLeft = scope.lefts[0];
 	  			scope.invalidInput = "";
@@ -277,10 +305,21 @@ app.directive('magnet', function(){
 	  			scope.selectedComp = scope.comps[0];
 	  			// scope.selectedRight = scope.rights[0];
 	  			scope.selectedRight = "";
-
+	  			console.log(data.length);
 	  			//generate dataPoint nodes
 	  			for (i=0;i<(data.length/3);i++){
-	  				var a = {id:i, data:data[i%(data.length)], type:"point"};
+	  				var newD = data[i];
+	  				//TODO: refactor soon
+	  				delete newD.photo;
+	  				delete newD.agency_name;
+	  				delete newD.org;
+	  				delete newD.agency_contact;
+	  				delete newD.namus_number;
+		  			delete newD.ncmec_number;
+		  			delete newD.org_contact;
+		  			delete newD.aged_photo;
+		  			delete newD.org_name;
+	  				var a = {id:i, data:data[i], type:"point"};
 	  				nodes.push(a);
 	  			}
 	  			startData();
@@ -291,7 +330,8 @@ app.directive('magnet', function(){
   		link: link,
   		restrict: 'E',
   		scope: {
-  			data: '='
+  			data: '=',
+  			allowcreate: '='
   		},
   		templateUrl: 'magnet.html'
   	}
