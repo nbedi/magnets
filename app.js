@@ -9,7 +9,7 @@
 	//     	link:'http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States'};
 
 	var dataset = 
-	        {name:'List of open missing person cases in California', 
+	        {name:'List of 339 open missing person cases in Los Angeles, California', 
 	        data:'test2.json', 
 	        from:'National Missing and Unidentified Persons System (NamUs), parsed with find-us.herokuapp.com.',
 	        desc:'From NamUs: "The National Missing and Unidentified Persons System (NamUs) is a national centralized repository and resource center for missing persons and unidentified decedent records. The Missing Persons Database contains information about missing persons that can be entered by anyone; however before it appears as a case on NamUs, the information is verified."',
@@ -307,22 +307,26 @@ app.directive('magnet', function(){
 	  			scope.selectedComp = scope.comps[0];
 	  			// scope.selectedRight = scope.rights[0];
 	  			scope.selectedRight = "";
-	  			console.log(data.length);
 	  			//generate dataPoint nodes
-	  			for (i=0;i<(data.length/6);i++){
+	  			var count = 0;
+	  			for (i=0;i<(data.length);i++){
 	  				var newD = data[i];
-	  				//TODO: refactor soon
-	  				delete newD.photo;
-	  				delete newD.agency_name;
-	  				delete newD.org;
-	  				delete newD.agency_contact;
-	  				delete newD.namus_number;
-		  			delete newD.ncmec_number;
-		  			delete newD.org_contact;
-		  			delete newD.aged_photo;
-		  			delete newD.org_name;
-	  				var a = {id:i, data:data[i], type:"point"};
-	  				nodes.push(a);
+	  				
+	  				if (newD.county == "Los Angeles") {
+		  				//TODO: refactor soon
+		  				delete newD.photo;
+		  				delete newD.agency_name;
+		  				delete newD.org;
+		  				delete newD.agency_contact;
+		  				delete newD.namus_number;
+			  			delete newD.ncmec_number;
+			  			delete newD.org_contact;
+			  			delete newD.aged_photo;
+			  			delete newD.org_name;
+		  				var a = {id:i, data:data[i], type:"point"};
+		  				nodes.push(a);
+		  				count++;
+		  			}
 	  			}
 	  			startData();
 	  		}
