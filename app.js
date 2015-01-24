@@ -253,6 +253,7 @@ app.directive('magnet', function(){
 									.on('mouseover', tipMagnet.show)
 	      							.on('mouseout', tipMagnet.hide);	
 				force.start();
+				scope.selectedRight = "";
 			}
 	    }
 
