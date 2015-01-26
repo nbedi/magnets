@@ -175,6 +175,7 @@ app.directive('magnet', function(){
 			var nodeNumX = 0;
 			var nodeNumY = 0;
 			magnets = d3.selectAll(".magnet");
+			
 			nodes.forEach(function(o,i) {
 				if (magnets[0].length > 0) {
 					var newX = 0;
@@ -187,6 +188,7 @@ app.directive('magnet', function(){
 						if (isTrue(node.data()[nodeNumX].data,left,comp,right)) {
 							newX = newX + magnets[0][i].cx.baseVal.value;
 							newY = newY + magnets[0][i].cy.baseVal.value;
+							
 							pCount = pCount + 1;
 						}
 					}
@@ -251,7 +253,11 @@ app.directive('magnet', function(){
 									.call(drag)
 									.style("fill", "orange")
 									.on('mouseover', tipMagnet.show)
-	      							.on('mouseout', tipMagnet.hide);	
+	      							.on('mouseout', tipMagnet.hide)
+	      							.on('contextmenu', function(data, index) {
+	      													this.remove();
+														    d3.event.preventDefault();
+														});										
 				force.start();
 				scope.selectedRight = "";
 			}
@@ -295,13 +301,13 @@ app.directive('magnet', function(){
 	  			scope.lefts = Object.keys(data[0]);
 	  			scope.selectedLeft = scope.lefts[0];
 	  			scope.invalidInput = "";
-	  			if(getLeftType(eval("data[0]."+scope.selectedLeft))=="date"){
+	  			if(getType(eval("data[0]."+scope.selectedLeft))=="date"){
 	  				scope.comps = dateComps;
 	  				// scope.rights = dateRights;
-	  			}else if(getLeftType(eval("data[0]."+scope.selectedLeft))=="number") {
+	  			}else if(getType(eval("data[0]."+scope.selectedLeft))=="number") {
 	  				scope.comps = numComps;
 	  				// scope.rights = numRights;
-	  			}else if(getLeftType(eval("data[0]."+scope.selectedLeft))=="string") {
+	  			}else if(getType(eval("data[0]."+scope.selectedLeft))=="string") {
 	  				scope.comps = strComps;
 	  				// scope.rights = strRights;
 	  			}
