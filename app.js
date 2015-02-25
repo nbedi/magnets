@@ -15,6 +15,8 @@
 	        desc:'From NamUs: "The National Missing and Unidentified Persons System (NamUs) is a national centralized repository and resource center for missing persons and unidentified decedent records. The Missing Persons Database contains information about missing persons that can be entered by anyone; however before it appears as a case on NamUs, the information is verified."',
 	    	link:'https://www.findthemissing.org/en'};
 
+	var initialfields = ['sex','race'];
+
 	var numComps = [{name:'equals', op:'='}, {name:'greater than', op:'>'}, {name:'less than', op:'<'}];
 	var numRights = ['input','other'];
 
@@ -32,6 +34,8 @@
 app.controller('MagnetController', function($http, $scope){
    	var viz = this;
    	$scope.myDataset=dataset;
+
+   	viz.initialfields = initialfields;
 
    	$scope.onDatasetChange = function(newDataset){
    		d3.select("svg").selectAll("*").remove();
@@ -124,7 +128,7 @@ app.directive('magnet', function(){
   		el = el[0];
   		var width = window.innerWidth -150;
   		var height = width*.4;
-  		var radius = 10;
+  		var radius = 6;
 
   		var fill = d3.scale.category10();
 
@@ -150,6 +154,10 @@ app.directive('magnet', function(){
 		  .offset([-24, -50])
 		  .direction('e')
 		  .html(function(d) {
+		  	var right = d.right;
+		  	if (right == "") {
+		  		right = [empty];
+		  	}
 		    return (d.left + ' ' + d.comparator.name + ' '+ d.right);
 		  })
 
@@ -158,13 +166,7 @@ app.directive('magnet', function(){
 		  .offset([-24, -50])
 		  .direction('e')
 		  .html(function(d) {
-		  	// var tipString = "";
-		  	// var fields = Object.keys(d.data);
-		  	// console.log(fields);
-		  	// for (f = 0; f < fields.length; f++){
-		  	// 	tipString = tipString + (fields[f] + ": ") + (eval("d.data."+fields[f])) + "\n ";
-		  	// }
-		    return (d.data.first_name + " " + d.data.last_name);
+		    return ("<img onerror='this.style.display = \"none\"' src='"+d.data.photo+"'/><span>" + d.data.first_name + " " + d.data.last_name);
 		  })
 
 		svg.call(tipMagnet);
@@ -174,7 +176,7 @@ app.directive('magnet', function(){
 			var k = .1 * e.alpha;
 			var nodeNumX = 0;
 			var nodeNumY = 0;
-			magnets = d3.selectAll(".magnet");
+			magnets = svg.selectAll(".magnet");
 			
 			nodes.forEach(function(o,i) {
 				if (magnets[0].length > 0) {
@@ -211,12 +213,38 @@ app.directive('magnet', function(){
 		function startData() {
 			node = node.data(force.nodes(), function(d) { return d.id;});
 			node.enter().append("circle")
-			  				.attr("r", radius/4)
+			  				.attr("r", radius/3)
 			  				.attr("class", 'point')
 			  				.on('mouseover', tipPoint.show)
 			  				.on('mouseout', tipPoint.hide);
 			node.exit().remove();
 			force.start();
+
+			scope.$watch('initialmagnets', function(initial){
+		    	if(initial){
+		    		for(i=0;i<(initial.length);i++) {
+		    			if (initial[i] in scope.data[0]) {
+		    				var u = {}, d = [];
+		    				for(j=0;j<scope.data.length;j++) {
+		    					u[scope.data[j][initial[i]]] = 0;
+		    				}
+		    				var keys = Object.keys(u);
+		    				var ccomp;
+	    					if (getLeftType(initial[i])=="number")
+	    						ccomp = {name:'equals', op:'='};
+	    					else if (getLeftType(initial[i])=="string")
+	    						ccomp = {name:'equals (not case sensitive)', op:'strEq'};
+
+	    					var angle = 2 * 3.14 / keys.length;
+		    				for(k=0;k<keys.length;k++) {
+							    x = width/2 + (30 + (i*370)) * Math.sin(k * angle);
+							    y = height/2 +(30 + (i*150)) * Math.cos(k * angle);
+			    				customsubmit(initial[i],ccomp,keys[k],x,y);
+		    				}
+		    			}
+		    		}
+		    	}
+	    	});
 		}
 
 		function startMagnet() {
@@ -263,6 +291,30 @@ app.directive('magnet', function(){
 			}
 	    }
 
+	    customsubmit = function(cleft,ccomp,cright,cx,cy){
+			//refactor to use force layout!
+	    	var newData = [{left:cleft, comparator:ccomp, right:cright}];
+	    	if (errorCheck(cleft, cright)) {
+		    	var newX = cx;
+		    	var newY = cy;
+		    	svg.append('circle').data(newData)
+		    						.attr("cx", newX)
+									.attr("cy", newY)
+									.attr("r", radius)
+									.attr('class', 'magnet')
+									.call(drag)
+									.style("fill", "orange")
+									.on('mouseover', tipMagnet.show)
+	      							.on('mouseout', tipMagnet.hide)
+	      							.on('contextmenu', function(data, index) {
+	      													this.remove();
+														    d3.event.preventDefault();
+														});										
+				force.start();
+				scope.selectedRight = "";
+			}
+	    }
+
 	    scope.clearMagnets = function(){
 	    	magnets = svg.selectAll(".magnet");
 	    	magnets.remove();
@@ -286,12 +338,13 @@ app.directive('magnet', function(){
 	    })
 
   		scope.$watch('data', function(data){
-	  		if(data){	
+	  		if(data){
 	  			scope.invalidInd = false;
 	  			//TODO: refactor soon
 	  			delete data[0].photo;
 	  			delete data[0].agency_name;
 	  			delete data[0].org;
+	  			delete data[0].county;
 	  			delete data[0].agency_contact;
 	  			delete data[0].namus_number;
 	  			delete data[0].ncmec_number;
@@ -321,7 +374,6 @@ app.directive('magnet', function(){
 	  				
 	  				if (newD.county == "Los Angeles") {
 		  				//TODO: refactor soon
-		  				delete newD.photo;
 		  				delete newD.agency_name;
 		  				delete newD.org;
 		  				delete newD.agency_contact;
@@ -344,7 +396,8 @@ app.directive('magnet', function(){
   		restrict: 'E',
   		scope: {
   			data: '=',
-  			allowcreate: '='
+  			allowcreate: '=',
+  			initialmagnets: '='
   		},
   		templateUrl: 'magnet.html'
   	}

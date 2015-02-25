@@ -38,11 +38,13 @@
       </div>
      	</br>
       <div>
-    	<magnet data="magnet.data" allowcreate="true"/>
+    	 <magnet data="magnet.data" allowcreate="true" />
       </div>
-<!--       <div>
-      <magnet data="magnet.data" allowcreate="false"/>
-      </div> -->
+    </br>
+      <p class="text-center">You can also pass options that can remove the ability to create magnets and set initial magnets like below. Initial magnets will produce magnets arranged in concentric shapes. Each shape is a set of magnets with the same first field.</p>
+      <div>
+        <magnet data="magnet.data" allowcreate="false" initialmagnets="magnet.initialfields"/>
+      </div>
   </body>
 
   <footer><a href="http://neilbedi.com">Visualization by Neil Bedi</a></footer>

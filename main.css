@@ -34,6 +34,9 @@ table{
 
 p{
 	font-size: 0.8rem;
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .sort:hover {
@@ -87,6 +90,10 @@ label {
 
 button {
   font-size: 11px !important;
+}
+
+.d3-tip img {
+  padding-right: 10px;
 }
 
 
