@@ -128,7 +128,7 @@ app.directive('magnet', function(){
   		el = el[0];
   		var width = window.innerWidth -150;
   		var height = width*.4;
-  		var radius = 6;
+  		var radius = 5;
 
   		var fill = d3.scale.category10();
 
@@ -213,7 +213,7 @@ app.directive('magnet', function(){
 		function startData() {
 			node = node.data(force.nodes(), function(d) { return d.id;});
 			node.enter().append("circle")
-			  				.attr("r", radius/3)
+			  				.attr("r", radius/2)
 			  				.attr("class", 'point')
 			  				.on('mouseover', tipPoint.show)
 			  				.on('mouseout', tipPoint.hide);
@@ -221,6 +221,7 @@ app.directive('magnet', function(){
 			force.start();
 
 			scope.$watch('initialmagnets', function(initial){
+				var colors = ["green", "orange"];
 		    	if(initial){
 		    		for(i=0;i<(initial.length);i++) {
 		    			if (initial[i] in scope.data[0]) {
@@ -239,7 +240,7 @@ app.directive('magnet', function(){
 		    				for(k=0;k<keys.length;k++) {
 							    x = width/2 + (30 + (i*370)) * Math.sin(k * angle);
 							    y = height/2 +(30 + (i*150)) * Math.cos(k * angle);
-			    				customsubmit(initial[i],ccomp,keys[k],x,y);
+			    				customsubmit(initial[i],ccomp,keys[k],x,y,colors[i%colors.length]);
 		    				}
 		    			}
 		    		}
@@ -291,7 +292,7 @@ app.directive('magnet', function(){
 			}
 	    }
 
-	    customsubmit = function(cleft,ccomp,cright,cx,cy){
+	    customsubmit = function(cleft,ccomp,cright,cx,cy,color){
 			//refactor to use force layout!
 	    	var newData = [{left:cleft, comparator:ccomp, right:cright}];
 	    	if (errorCheck(cleft, cright)) {
@@ -303,7 +304,7 @@ app.directive('magnet', function(){
 									.attr("r", radius)
 									.attr('class', 'magnet')
 									.call(drag)
-									.style("fill", "orange")
+									.style("fill", color)
 									.on('mouseover', tipMagnet.show)
 	      							.on('mouseout', tipMagnet.hide)
 	      							.on('contextmenu', function(data, index) {
