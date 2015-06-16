@@ -1,26 +1,17 @@
 (function() {
 	var app = angular.module('magnet', []);
 
-	// var dataset = 
-	//         {name:'List of killings by law enforcement officers in the United States', 
-	//         data:'test.json', 
-	//         from:'Wikipedia, parsed with BeautifulSoup',
-	//         desc:'"Listed below are lists of people killed by nonmilitary law enforcement officers, whether in the line of duty or not, and regardless of reason or method. Inclusion in the lists implies neither wrongdoing nor justification on the part of the person killed or the officer involved. The listing merely documents the occurrence of a death. The lists below are incomplete, as the annual average number of justifiable homicides alone is estimated to be near 400. Although Congress instructed the Attorney General in 1994 to compile and publish annual statistics on police use of excessive force, this was never carried out, and the FBI does not collect this data either."',
-	//     	link:'http://en.wikipedia.org/wiki/List_of_killings_by_law_enforcement_officers_in_the_United_States'};
-
 	var dataset = 
 	        {name:'List of 339 open missing person cases in Los Angeles, California', 
 	        data:'test2.json', 
-	        from:'National Missing and Unidentified Persons System (NamUs), parsed with find-us.herokuapp.com.',
+	        from:'National Missing and Unidentified Persons System (NamUs), parsed with find-us.herokuapp.com on March 15 2014.',
 	        desc:'From NamUs: "The National Missing and Unidentified Persons System (NamUs) is a national centralized repository and resource center for missing persons and unidentified decedent records. The Missing Persons Database contains information about missing persons that can be entered by anyone; however before it appears as a case on NamUs, the information is verified."',
 	    	link:'https://www.findthemissing.org/en'};
 
-	var initialfields = ['sex','race'];
-
-	var numComps = [{name:'equals', op:'='}, {name:'greater than', op:'>'}, {name:'less than', op:'<'}];
+	var numComps = [{name:'equals', op:'='}, {name:'greater than', op:'>'}, {name:'less than', op:'<'}, {name:'between (separate two numbers by spaces)', op:'between'}];
 	var numRights = ['input','other'];
 
-	var strComps = [{name:'equals (not case sensitive)', op:'strEq'}, {name:'equals (case sensitive)', op:'='}, {name:'contains (not case sensitive)', op:'contains'}];
+	var strComps = [{name:'equals', op:'strEq'}, {name:'contains', op:'contains'}];
 	var strRights = ['sInput','sOther'];
 
 	var dateComps = [{name:'before', op: '<'}, {name:'after', op: '>'}, {name:'equals', op:'='}];
@@ -34,15 +25,6 @@
 app.controller('MagnetController', function($http, $scope){
    	var viz = this;
    	$scope.myDataset=dataset;
-
-   	viz.initialfields = initialfields;
-
-   	$scope.onDatasetChange = function(newDataset){
-   		d3.select("svg").selectAll("*").remove();
-   		$http.get(newDataset.data).success(function(data) {
-  		viz.data = data;
-  	});
-   		};
   	
    	$http.get($scope.myDataset.data).success(function(data) {
   		viz.data = data;
@@ -58,6 +40,9 @@ app.directive('magnet', function(){
   		var operate = {
   			'=': function(x,y) { return x.valueOf() == y.valueOf()},
   			'strEq': function(x,y) { return x.toLowerCase() == y.toLowerCase()},
+  			'between': function(x,y) { 
+  						var betweenArr = y.split(" ");
+  						return (parseInt(betweenArr[0]) <= parseInt(x) && parseInt(x) <= betweenArr[1]);},
   			'<': function(x,y) { return x < y},
   			'>': function(x,y) { return x > y},
   			'contains': function(x,y) { if (x&&y) {return (x.toLowerCase()).indexOf(y.toLowerCase())>-1} else return false}
@@ -68,9 +53,9 @@ app.directive('magnet', function(){
 				// if(getType(eval("scope.data[0]."+val))=="date"){
 				// 	return "date";
 				// }else 
-				if(getType(eval("scope.data[0]."+val))=="number") {
+				if(getType(scope.data[0][val])=="number") {
 					return "number";
-				}else if(getType(eval("scope.data[0]."+val))=="string") {
+				}else if(getType(scope.data[0][val])=="string") {
 					return "string";
 				}
 			}
@@ -80,7 +65,7 @@ app.directive('magnet', function(){
 			// if(isDate(val)){
 			// 	return "date";
 			// }else 
-			if(Number(val)) {
+			if(!isNaN(val)) {
 				return "number";
 			}else {
 				return "string";
@@ -98,8 +83,6 @@ app.directive('magnet', function(){
 
 		function isTrue(data,left,comp,right) {
 			if (data) {
-				if (!(getLeftType(left)==getType(right)))
-					return false;
 				var leftData = getData(eval("data."+left));
 				var rightData = getData(right);
 				var test = operate[comp.op](leftData,rightData);
@@ -110,11 +93,21 @@ app.directive('magnet', function(){
 			return true;
 		}
 
-		function errorCheck(left, right) {
+		function errorCheck(left, comp, right) {
 			if (right=="") {
 				scope.invalidInput = "Second field cannot be empty.";
 				scope.invalidInd = true;
 				return false;
+			}
+			if (comp.op=="between") {
+				var betweenArr = right.split(" ");
+				if (betweenArr.length != 2 || getType(betweenArr[0])!=getLeftType(left) || getType(betweenArr[1])!=getLeftType(left)) {
+					scope.invalidInput = "Must have only two numbers separated by one space.";
+					scope.invalidInd = true;
+					return false;
+				}
+				scope.invalidInd = false;
+				return true;
 			}
 			if (getLeftType(left)!=getType(right) && !(getLeftType(left)=="string")) {
 				scope.invalidInput = "Second field type does not match first field type.";
@@ -221,26 +214,48 @@ app.directive('magnet', function(){
 			force.start();
 
 			scope.$watch('initialmagnets', function(initial){
-				var colors = ["green", "orange"];
+				var colors = ["green", "orange", "blue"];
 		    	if(initial){
+		    		initial = ['sex', 'race'];
 		    		for(i=0;i<(initial.length);i++) {
 		    			if (initial[i] in scope.data[0]) {
-		    				var u = {}, d = [];
-		    				for(j=0;j<scope.data.length;j++) {
-		    					u[scope.data[j][initial[i]]] = 0;
-		    				}
-		    				var keys = Object.keys(u);
-		    				var ccomp;
-	    					if (getLeftType(initial[i])=="number")
-	    						ccomp = {name:'equals', op:'='};
-	    					else if (getLeftType(initial[i])=="string")
-	    						ccomp = {name:'equals (not case sensitive)', op:'strEq'};
+	    					if (getLeftType(initial[i])=="number") {
+	    						ccomp = {name:'between', op:'between'};
+	    						var low = Number.POSITIVE_INFINITY;
+								var high = Number.NEGATIVE_INFINITY;
+								var tmp;
+								for (m=0;m<scope.data.length;m++) {
+								    tmp = parseInt(scope.data[m][initial[i]],10);
+								    if (tmp < low) low = tmp;
+								    if (tmp > high) high = tmp;
+								}
+								high=high+1;
+								var inc = parseInt(Math.ceil((high-low)/5));
+								var angle = 2 * 3.14 / 5;
+								for (n=0;n<5;n++) {
+									var num_one = inc*n+low;
+									var num_two = inc*(n+1)+low;
+									var num_right = num_one + " " + num_two;
+								    x = width/2 + (30 + (i*370)) * Math.sin(n * angle);
+								    y = height/2 +(30 + (i*150)) * Math.cos(n * angle);
+				    				customsubmit(initial[i],ccomp,num_right,x,y,colors[i%colors.length]);
+								}
+	    					}
+	    					else if (getLeftType(initial[i])=="string") {
+	    						var u = {}, d = [];
+			    				for(j=0;j<scope.data.length;j++) {
+			    					u[scope.data[j][initial[i]]] = 0;
+			    				}
+			    				var keys = Object.keys(u);
+			    				var ccomp;
+	    						ccomp = {name:'equals', op:'strEq'};
 
-	    					var angle = 2 * 3.14 / keys.length;
-		    				for(k=0;k<keys.length;k++) {
-							    x = width/2 + (30 + (i*370)) * Math.sin(k * angle);
-							    y = height/2 +(30 + (i*150)) * Math.cos(k * angle);
-			    				customsubmit(initial[i],ccomp,keys[k],x,y,colors[i%colors.length]);
+		    					var angle = 2 * 3.14 / keys.length;
+			    				for(k=0;k<keys.length;k++) {
+								    x = width/2 + (30 + (i*370)) * Math.sin(k * angle);
+								    y = height/2 +(30 + (i*150)) * Math.cos(k * angle);
+				    				customsubmit(initial[i],ccomp,keys[k],x,y,colors[i%colors.length]);
+				    			}
 		    				}
 		    			}
 		    		}
@@ -271,7 +286,7 @@ app.directive('magnet', function(){
 		scope.submit = function(){
 			//refactor to use force layout!
 	    	var newData = [{left:scope.selectedLeft, comparator:scope.selectedComp, right:scope.selectedRight}];
-	    	if (errorCheck(scope.selectedLeft, scope.selectedRight)) {
+	    	if (errorCheck(scope.selectedLeft, scope.selectedComp, scope.selectedRight)) {
 		    	var newX = (Math.random() * (width-250))+25;
 		    	var newY = (Math.random() * (height-75))+25;
 		    	svg.append('circle').data(newData)
@@ -295,7 +310,7 @@ app.directive('magnet', function(){
 	    customsubmit = function(cleft,ccomp,cright,cx,cy,color){
 			//refactor to use force layout!
 	    	var newData = [{left:cleft, comparator:ccomp, right:cright}];
-	    	if (errorCheck(cleft, cright)) {
+	    	if (errorCheck(cleft, ccomp, cright)) {
 		    	var newX = cx;
 		    	var newY = cy;
 		    	svg.append('circle').data(newData)
@@ -334,6 +349,14 @@ app.directive('magnet', function(){
 	  				// scope.rights = strRights;
 	  			}
 	  			scope.selectedComp = scope.comps[0];
+	  			scope.suggestions = [];
+	  			i=0;
+	  			for(j=0;j<scope.data.length;j++) {
+	  				if (scope.suggestions.indexOf(scope.data[j][scope.selectedLeft]) < 0) {
+	  					scope.suggestions[i]=scope.data[j][scope.selectedLeft];
+	  					i++;
+	  				}
+	  			}
 	  			// scope.selectedRight = scope.rights[0];
 	  		}
 	    })
